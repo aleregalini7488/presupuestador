@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurador — Tecnología de Siembra</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde:       #1a5c34;
+      --verde-claro: #e8f5ee;
+      --verde-mid:   #2d7a4a;
+      --amarillo:    #f5a623;
+      --gris-bg:     #f4f4f2;
+      --gris-borde:  #d8d5cc;
+      --gris-texto:  #6b6860;
+      --negro:       #1c1c1a;
+      --blanco:      #ffffff;
+      --radio:       6px;
+      --radio-lg:    10px;
+      --sombra:      0 1px 3px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--gris-bg);
+      color: var(--negro);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    header {
+      background: var(--verde);
+      color: var(--blanco);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    header svg { flex-shrink: 0; opacity: .9; }
+    header h1 { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+    header p  { font-size: 13px; opacity: .75; margin-top: 2px; }
+    header .header-info { flex: 1; }
+    .btn-inicio {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: var(--blanco);
+      padding: 7px 14px;
+      border-radius: var(--radio);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-inicio:hover { background: rgba(255,255,255,0.22); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    @media (max-width: 720px) {
+      .layout { grid-template-columns: 1fr; padding: 0 1rem; margin: 1rem auto; }
+    }
+
+    .panel-opciones {
+      background: var(--blanco);
+      border: 1px solid var(--gris-borde);
+      border-radius: var(--radio-lg) 0 0 var(--radio-lg);
+      padding: 1.5rem;
+    }
+    @media (max-width: 720px) {
+      .panel-opciones { border-radius: var(--radio-lg) var(--radio-lg) 0 0; }
+    }
+
+    .step { margin-bottom: 1.5rem; }
+    .step:last-child { margin-bottom: 0; }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      background: var(--verde);
+      color: var(--blanco);
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--gris-texto);
+      margin-bottom: .65rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .opt-grid { display: flex; flex-direction: column; gap: 6px; }
+
+    .opt-btn {
+      width: 100%;
+      text-align: left;
+      padding: 9px 12px;
+      font-size: 13px;
+      border: 1px solid var(--gris-borde);
+      border-radius: var(--radio);
+      background: var(--blanco);
+      color: var(--negro);
+      cursor: pointer;
+      transition: background .12s, border-color .12s;
+      line-height: 1.4;
+    }
+    .opt-btn:hover { background: var(--gris-bg); border-color: #b5b3aa; }
+    .opt-btn.selected {
+      background: var(--verde-claro);
+      border-color: var(--verde-mid);
+      color: var(--verde);
+      font-weight: 500;
+    }
+
+    .divider-v {
+      border: none;
+      border-top: 1px solid var(--gris-borde);
+      margin: 1.25rem 0;
+    }
+
+    .panel-resultado {
+      background: var(--blanco);
+      border: 1px solid var(--gris-borde);
+      border-left: none;
+      border-radius: 0 var(--radio-lg) var(--radio-lg) 0;
+      padding: 1.5rem;
+      min-height: 400px;
+    }
+    @media (max-width: 720px) {
+      .panel-resultado {
+        border-left: 1px solid var(--gris-borde);
+        border-top: none;
+        border-radius: 0 0 var(--radio-lg) var(--radio-lg);
+      }
+    }
+
+    .resultado-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .resultado-titulo {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--negro);
+      line-height: 1.4;
+    }
+    .resultado-subtitulo {
+      font-size: 12px;
+      color: var(--gris-texto);
+      margin-top: 2px;
+    }
+
+    .btn-accion {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      font-size: 13px;
+      border: 1px solid var(--gris-borde);
+      border-radius: var(--radio);
+      background: var(--blanco);
+      color: var(--negro);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .12s;
+    }
+    .btn-accion:hover { background: var(--gris-bg); }
+    .btn-accion.verde {
+      background: var(--verde);
+      color: var(--blanco);
+      border-color: var(--verde);
+    }
+    .btn-accion.verde:hover { background: var(--verde-mid); }
+
+    .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .bom-section { margin-bottom: 1rem; }
+
+    .bom-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--gris-texto);
+      padding: 6px 0 6px;
+      border-bottom: 1px solid var(--gris-borde);
+      margin-bottom: 2px;
+    }
+
+    table.bom {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    table.bom td {
+      padding: 7px 8px;
+      border-bottom: 1px solid #f0ede8;
+      vertical-align: top;
+    }
+    table.bom tr:last-child td { border-bottom: none; }
+    table.bom .td-code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-weight: 600;
+      color: var(--verde);
+      white-space: nowrap;
+      width: 110px;
+    }
+    table.bom .td-desc { color: var(--negro); }
+    table.bom .td-qty  {
+      text-align: right;
+      color: var(--gris-texto);
+      white-space: nowrap;
+      width: 60px;
+    }
+    table.bom .td-qty span {
+      background: var(--gris-bg);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12px;
+    }
+    table.bom .td-precio {
+      text-align: right;
+      white-space: nowrap;
+      font-size: 12px;
+      width: 100px;
+    }
+    table.bom .td-precio { color: var(--negro); font-weight: 500; }
+    table.bom .td-total-precio { 
+      text-align: right; white-space: nowrap; font-size: 12px;
+      color: var(--verde); font-weight: 600; width: 110px;
+    }
+    table.bom th {
+      font-size: 11px; font-weight: 600; color: var(--gris-texto);
+      text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--gris-borde);
+    }
+    table.bom th:first-child, table.bom th:nth-child(2) { text-align: left; }
+    .totales-bar {
+      background: var(--verde-claro);
+      border: 1px solid #b8dfc9;
+      border-radius: var(--radio);
+      padding: 10px 16px;
+      margin-top: 1rem;
+      display: flex;
+      gap: 2rem;
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+    .totales-bar .t-label { color: var(--gris-texto); font-size: 12px; }
+    .totales-bar .t-val   { font-weight: 600; color: var(--verde); font-size: 15px; }
+    .bom-nota {
+      font-size: 11px;
+      color: var(--amarillo);
+      background: #fff8ed;
+      border-left: 3px solid var(--amarillo);
+      border-radius: 0 var(--radio) var(--radio) 0;
+      padding: 5px 10px;
+      margin-top: 4px;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 280px;
+      color: var(--gris-texto);
+      text-align: center;
+      gap: .75rem;
+    }
+    .empty-state svg { opacity: .25; }
+    .empty-state p { font-size: 14px; }
+
+    .resumen-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--verde-claro);
+      border: 1px solid #b8dfc9;
+      border-radius: var(--radio);
+      padding: 8px 14px;
+      margin-bottom: 1.25rem;
+      font-size: 13px;
+    }
+    .resumen-bar strong { color: var(--verde); }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="28" r="5" stroke="white" stroke-width="2"/>
+    <circle cx="28" cy="28" r="5" stroke="white" stroke-width="2"/>
+    <path d="M4 18h28M4 12h20l4 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <path d="M14 8v10M20 6v12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <div class="header-info">
+    <h1>Configurador de Tecnología de Siembra</h1>
+    <p>Agronorte — John Deere Precision Ag</p>
+  </div>
+  <a class="btn-inicio" href="https://aleregalini7488.github.io">🏠 Inicio</a>
+</header>
+
+<div class="layout">
+
+  <div class="panel-opciones">
+    <div class="step" id="step-tech">
+      <div class="step-title"><span class="step-num">1</span>Tipo de tecnología</div>
+      <div class="opt-grid" id="opts-tech"></div>
+    </div>
+
+    <div class="step" id="step-surcos" style="display:none">
+      <hr class="divider-v">
+      <div class="step-title"><span class="step-num">2</span>Cantidad de surcos</div>
+      <div class="opt-grid" id="opts-surcos"></div>
+    </div>
+
+    <div class="step" id="step-mando" style="display:none">
+      <hr class="divider-v">
+      <div class="step-title"><span class="step-num">3</span>Tipo de mando</div>
+      <div class="opt-grid" id="opts-mando"></div>
+    </div>
+  </div>
+
+  <div class="panel-resultado" id="panel-resultado">
+    <div class="empty-state" id="empty-state">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <rect x="8" y="16" width="32" height="24" rx="3" stroke="#888" stroke-width="2"/>
+        <path d="M16 16V12a8 8 0 0116 0v4" stroke="#888" stroke-width="2"/>
+        <circle cx="24" cy="28" r="3" fill="#888"/>
+      </svg>
+      <p>Seleccioná las opciones para ver<br>el listado de códigos</p>
+    </div>
+    <div id="bom-content" style="display:none"></div>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+
+<script>
+const sel = { tech: null, surcos: null, mando: null };
+
+const TECH_OPTS = [
+  { id: "mon",        label: "Monitoreo" },
+  { id: "mon_vrd",    label: "Monitoreo + Dosis Variable" },
+  { id: "mon_rc",     label: "Monitoreo + Row Command" },
+  { id: "mon_rc_vrd", label: "Monitoreo + Row Command + Dosis Variable" },
+  { id: "sec",        label: "Corte por Secciones" },
+];
+
+const SURCOS_OPTS  = ["16@52", "18@52", "20@52", "22@52", "24@52", "+24 hasta 30@52"];
+const MANDOS_OPTS  = Object.keys(DATA.mandos);
+
+function needsMando(tech) { return ["mon_rc","mon_rc_vrd","sec"].includes(tech); }
+
+function renderOpts(containerId, opts, key) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  opts.forEach(opt => {
+    const id    = opt.id    !== undefined ? opt.id    : opt;
+    const label = opt.label !== undefined ? opt.label : opt;
+    const btn   = document.createElement("button");
+    btn.className = "opt-btn" + (sel[key] === id ? " selected" : "");
+    btn.textContent = label;
+    btn.onclick = () => {
+      sel[key] = id;
+      if (key === "tech") { sel.surcos = null; sel.mando = null; }
+      if (key === "surcos") { sel.mando = null; }
+      render();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function show(id) { document.getElementById(id).style.display = ""; }
+function hide(id) { document.getElementById(id).style.display = "none"; }
+
+function buildBOM() {
+  const t = sel.tech, s = sel.surcos;
+  if (!t || !s) return null;
+  if (needsMando(t) && !sel.mando) return null;
+
+  const bom = [];
+  const add = (title, items, nota) => bom.push({ title, items, nota });
+
+  function getModulos(surcos) {
+    const m = DATA.modulosPorSurcos[surcos];
+    if (!m) return [];
+    return [
+      { code: m.controlador, desc: m.descCtrl,    qty: 1 },
+      { code: "AH224250",    desc: "Arnés módulo", qty: m.arnes },
+    ];
+  }
+
+  function getMandoItems(mandoKey, surcos) {
+    const n = DATA.surcosCantidad[surcos] || 0;
+    return DATA.mandos[mandoKey].items.map(item => ({
+      code: item.code,
+      desc: item.desc,
+      qty:  item.qty_surcos ? n : item.qty,
+    }));
+  }
+
+  if (t === "mon") {
+    add("Kit de Lanza SeedStar",  DATA.kitLanza);
+    add("Sensores de monitoreo",  DATA.sensoresMonitoreo[s]);
+  }
+  else if (t === "mon_vrd") {
+    add("Kit de Lanza SeedStar",       DATA.kitLanza);
+    add("Sensores de monitoreo",       DATA.sensoresMonitoreo[s]);
+    add("Dosis Variable — sensor movimiento", DATA.sensorMovimiento);
+    add("Dosis Variable — mandos hidráulicos", DATA.mandosHidraulicos);
+  }
+  else if (t === "mon_rc") {
+    add("Kit de Lanza SeedStar",     DATA.kitLanza);
+    add("Sensores de monitoreo",     DATA.sensoresRC[s]);
+    add("Row Command — controlador", DATA.rateController);
+    add("Row Command — mando",       getMandoItems(sel.mando, s));
+    add("Row Command — embrague",    DATA.embrague);
+    add("Row Command — módulos",     getModulos(s));
+  }
+  else if (t === "mon_rc_vrd") {
+    add("Kit de Lanza SeedStar",     DATA.kitLanza);
+    add("Sensores de monitoreo",     DATA.sensoresRC[s]);
+    add("Row Command — controlador", DATA.rateController);
+    add("Row Command — mando",       getMandoItems(sel.mando, s));
+    add("Row Command — embrague",    DATA.embrague);
+    add("Row Command — módulos",     getModulos(s));
+    add("Dosis Variable — sensor movimiento", DATA.sensorMovimiento);
+    add("Dosis Variable — mandos hidráulicos", DATA.mandosHidraulicos);
+  }
+  else if (t === "sec") {
+    add("Corte por Secciones — controlador", DATA.rateController);
+    add("Mando",    getMandoItems(sel.mando, s));
+    add("Embrague", DATA.embrague);
+    add("Módulos",  getModulos(s));
+  }
+
+  const n = DATA.surcosCantidad[s] || 0;
+  let horasMonitoreo = 0;
+  let horasRC        = 0;
+  let horasVRD       = 0;
+
+  if (t === "mon")        { horasMonitoreo = n * 1; }
+  if (t === "mon_vrd")    { horasMonitoreo = n * 1; horasVRD = 8; }
+  if (t === "mon_rc")     { horasMonitoreo = n * 1; horasRC = n * 0.5; }
+  if (t === "mon_rc_vrd") { horasMonitoreo = n * 1; horasRC = n * 0.5; horasVRD = 8; }
+  if (t === "sec")        { horasRC = n * 0.5; }
+
+  const iamsItems = [];
+  if (horasMonitoreo > 0)
+    iamsItems.push({ code: "IAMS", desc: `Instalación AMS — Monitoreo (${n} hs × $70)`, qty: horasMonitoreo });
+  if (horasRC > 0)
+    iamsItems.push({ code: "IAMS", desc: `Instalación AMS — Corte por Secciones / RC (${horasRC} hs × $70)`, qty: horasRC });
+  if (horasVRD > 0)
+    iamsItems.push({ code: "IAMS", desc: `Instalación AMS — Siembra Variable (${horasVRD} hs × $70)`, qty: horasVRD });
+
+  if (iamsItems.length > 0)
+    add("Mano de obra — Instalación AMS", iamsItems);
+
+  return bom;
+}
+
+function renderBOM(bom) {
+  const techLabel   = TECH_OPTS.find(t => t.id === sel.tech)?.label || "";
+  const totalLineas = bom.reduce((acc, s) => acc + (s.items?.length || 0), 0);
+
+  let html = `
+    <div class="resultado-header">
+      <div>
+        <div class="resultado-titulo">${techLabel}</div>
+        <div class="resultado-subtitulo">${sel.surcos || ""}${sel.mando ? " · " + sel.mando : ""}</div>
+      </div>
+      <div class="acciones">
+        <button class="btn-accion" onclick="copiarBOM()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a1 1 0 011-1h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Copiar
+        </button>
+        <button class="btn-accion verde" onclick="exportarCSV()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0L5 7m3 3l3-3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h10" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+    </div>
+    <div class="resumen-bar">
+      <span>Total de líneas: <strong>${totalLineas}</strong></span>
+      <span style="color:var(--gris-texto);font-size:12px">${bom.length} secciones</span>
+    </div>
+  `;
+
+  bom.forEach(sec => {
+    if (!sec.items || sec.items.length === 0) return;
+    html += `<div class="bom-section">`;
+    html += `<div class="bom-section-title">${sec.title}</div>`;
+    html += `<table class="bom">
+      <thead><tr>
+        <th style="text-align:left">Código</th>
+        <th style="text-align:left">Descripción</th>
+        <th>Cant.</th>
+        <th>Precio unit.</th>
+        <th>Total precio</th>
+      </tr></thead><tbody>`;
+    sec.items.forEach(item => {
+      const isIAMS = item.code === "IAMS";
+      const qtyTxt = item.qty > 1 ? (isIAMS ? `${item.qty} hs` : `×${item.qty}`) : "";
+      const p = DATA.precios[item.code];
+      const precioLabel = isIAMS ? `$${p ? p.precio.toFixed(2) : "70.00"}/hs` : (p ? `$${p.precio.toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2})}` : "—");
+      const precioTxt = precioLabel;
+      const totalVal  = p ? p.precio * item.qty : null;
+      const totalTxt  = totalVal != null ? `$${totalVal.toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2})}` : "—";
+      html += `
+        <tr>
+          <td class="td-code">${item.code}</td>
+          <td class="td-desc">${item.desc}</td>
+          <td class="td-qty">${qtyTxt ? `<span>${qtyTxt}</span>` : ""}</td>
+          <td class="td-precio">${precioTxt}</td>
+          <td class="td-total-precio">${totalTxt}</td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    if (sec.nota) html += `<div class="bom-nota">⚠ ${sec.nota}</div>`;
+    html += `</div>`;
+  });
+
+  let totalPrecio = 0;
+  bom.forEach(sec => (sec.items||[]).forEach(i => {
+    const p = DATA.precios[i.code];
+    if (p) { totalPrecio += p.precio * i.qty; }
+  }));
+  const fmt = v => `$${v.toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2})} USD`;
+  html += `
+    <div class="totales-bar">
+      <div><div class="t-label">Precio total</div><div class="t-val">${fmt(totalPrecio)}</div></div>
+    </div>`;
+
+  return html;
+}
+
+function copiarBOM() {
+  const bom = buildBOM();
+  if (!bom) return;
+  const techLabel = TECH_OPTS.find(t => t.id === sel.tech)?.label || "";
+  let txt = `CONFIGURACIÓN: ${techLabel}\n`;
+  txt += `Surcos: ${sel.surcos || "-"}  |  Mando: ${sel.mando || "-"}\n`;
+  txt += "=".repeat(70) + "\n\n";
+  bom.forEach(sec => {
+    txt += `${sec.title.toUpperCase()}\n`;
+    (sec.items || []).forEach(i => {
+      const q  = i.code === "IAMS" ? `${i.qty}hs` : (i.qty > 1 ? `x${i.qty}` : "  ");
+      const p  = DATA.precios[i.code];
+      const pr  = p ? `Precio: $${p.precio.toFixed(2)}` : "";
+      const tot = p ? `Total: $${(p.precio * i.qty).toFixed(2)}` : "";
+      txt += `  ${i.code.padEnd(12)} ${i.desc.padEnd(40)} ${q}  ${pr.padEnd(20)} ${tot}\n`;
+    });
+    txt += "\n";
+  });
+  let tp = 0;
+  bom.forEach(sec => (sec.items||[]).forEach(i => { const p = DATA.precios[i.code]; if(p){ tp+=p.precio*i.qty; } }));
+  txt += `${"=".repeat(70)}\nPRECIO TOTAL: $${tp.toFixed(2)} USD\n`;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.querySelector(".btn-accion:not(.verde)");
+    if (btn) { btn.textContent = "¡Copiado!"; setTimeout(() => { btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 11V3a1 1 0 011-1h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Copiar`; }, 2000); }
+  });
+}
+
+function exportarCSV() {
+  const bom = buildBOM();
+  if (!bom) return;
+  const techLabel = TECH_OPTS.find(t => t.id === sel.tech)?.label || "";
+  let csv = "Seccion,Codigo,Descripcion,Cantidad,Precio_unit_USD,Total_precio_USD,IVA\n";
+
+  bom.forEach(sec => {
+    (sec.items || []).forEach(i => {
+      const p = DATA.precios[i.code];
+      const pr  = p ? p.precio.toFixed(2)           : "";
+      const tot = p ? (p.precio * i.qty).toFixed(2) : "";
+      const iva = p ? p.iva : "";
+      csv += `"${sec.title}","${i.code}","${i.desc}","${i.qty}","${pr}","${tot}","${iva}"\n`;
+    });
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `siembra_${sel.tech}_${(sel.surcos||"").replace(/@/g,"")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function render() {
+  renderOpts("opts-tech", TECH_OPTS, "tech");
+
+  if (sel.tech) {
+    show("step-surcos");
+    renderOpts("opts-surcos", SURCOS_OPTS, "surcos");
+  } else {
+    hide("step-surcos");
+  }
+
+  if (sel.tech && needsMando(sel.tech) && sel.surcos) {
+    show("step-mando");
+    renderOpts("opts-mando", MANDOS_OPTS, "mando");
+  } else {
+    hide("step-mando");
+  }
+
+  const bom      = buildBOM();
+  const empty    = document.getElementById("empty-state");
+  const content  = document.getElementById("bom-content");
+
+  if (bom) {
+    empty.style.display   = "none";
+    content.style.display = "";
+    content.innerHTML     = renderBOM(bom);
+  } else {
+    empty.style.display   = "";
+    content.style.display = "none";
+  }
+}
+
+render();
+</script>
+
+</body>
+</html>
